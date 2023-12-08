@@ -1,0 +1,125 @@
+Attribute VB_Name = "Module1"
+Sub stockdatasummary()
+  Dim Current As Worksheet
+  For Each Current In ThisWorkbook.Worksheets
+  Current.Activate
+
+    Dim ticker_name As String
+    Dim total_vol As Double
+    total_vol = 0
+
+    ' summary table
+    Dim sum_table As Integer
+    sum_table = 2
+  
+    ' Headers
+    Range("I1") = "Ticker"
+    Range("J1") = "Yearly Change"
+    Range("K1") = "Percent Change"
+    Range("L1") = "Total Stock Volume"
+    Range("O2") = "Greatest % Increase Value"
+    Range("O3") = "Greatest % Decrease Value"
+    Range("O4") = "Greatest Total Volume"
+    Range("P1") = "Ticker"
+    Range("Q1") = "Value"
+  
+
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+  
+   
+       For i = 2 To lastrow
+        'If previous ticker and current ticker are not the same, then...
+        If Cells(i - 1, 1) <> Cells(i, 1) Then
+        open_price = Cells(i, 3)
+        
+        'If next ticker and current ticker are not the same, then...
+        ElseIf Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+
+    
+        ticker_name = Cells(i, 1).Value
+
+      
+        total_vol = total_vol + Cells(i, 7).Value
+      
+      
+        close_price = Cells(i, 6).Value
+      
+       
+        yearly_change = close_price - open_price
+      
+   
+        percent_change = ((close_price - open_price) / open_price)
+        On Error Resume Next
+
+        Range("I" & summary_table).Value = ticker_name
+      
+        Range("J" & summary_table).Value = yearly_change
+      
+        Range("K" & summary_table).Value = percent_change
+        Columns("K:K").NumberFormat = "0.00%"
+
+        Range("L" & summary_table).Value = total_vol
+      
+        summary_table = summary_table + 1
+      
+        ' Reset the total volume
+        total_vol = 0
+
+        ' If ticker is the same
+        Else
+        'Add to the ticker total
+        total_vol = total_vol + Cells(i, 7).Value
+
+        End If
+             
+       Next i
+        
+        'After the 1st loop is done, set the next loop
+       Dim big_increase, big_decrease As Double
+       great_increase = Cells(2, 11)
+       great_decrease = Cells(2, 11)
+       greatest_vol = Cells(2, 12)
+       lastrow_sum = Cells(Rows.Count, 10).End(xlUp).Row
+  
+       For j = 2 To lastrow_sum
+        'Change the format depending on the value
+        If Cells(j, 10) >= 0 Then
+        Cells(j, 10).Interior.ColorIndex = 4
+  
+        ElseIf Cells(j, 10) < 0 Then
+        Cells(j, 10).Interior.ColorIndex = 3
+   
+        End If
+        
+        'Loop through each row and replace the greatest increase in value
+        If Cells(j, 11) > great_increase Then
+        great_increase = Cells(j, 11)
+        Cells(2, 17) = great_increase
+        Cells(2, 17).NumberFormat = "0.00%"
+        Cells(2, 16) = Cells(j, 9)
+   
+        End If
+   
+        'Loop through each row and replace the greatest decrease in value
+        If Cells(j, 11) < great_decrease Then
+        great_decrease = Cells(j, 11)
+        Cells(3, 17) = great_decrease
+        Cells(3, 17).NumberFormat = "0.00%"
+        Cells(3, 16) = Cells(j, 9)
+  
+        End If
+        
+        'Loop through each row and replace the greatest volume
+        If Cells(j, 12) > greatest_vol Then
+        greatest_vol = Cells(j, 12)
+        Cells(4, 17) = greatest_vol
+        Cells(4, 16) = Cells(j, 9)
+   
+        End If
+   
+       Next j
+ 
+        Columns("I:Q").AutoFit
+ Next
+
+End Sub
